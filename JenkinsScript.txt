@@ -26,14 +26,13 @@ node {
         dir ("/var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build") {
             sh 'if ls ./DB*.txt 1> /dev/null 2>&1; then rm DB_*.txt; fi'
             sh 'for f in ./gomatcher/*/; do ./test_run "${f}" 16 > DB_$(echo ${f} | cut -d"/" -f 3).txt; done'
-            // substr = $(echo ${f} | cut -d"/" -f 3);
-            // sh 'echo "================================"'
-            // sh 'tail -n 5 "${f}".txt'
-            // sh 'echo "================================"'
+            sh 'if ls ./DB*.txt 1> /dev/null 2>&1; then tail -n 13 DB_*.txt; tail -n 13 DB_*.txt > DB_result_list.txt; fi'
+            sh 'cp DB_result_list.txt /home/sharefun/Database/DB_result_list.txt'
+            sh 'echo "---CD Completed---"'
+
             // sh './test_run ./gomatcher/target_db_smaller_set_8bit 16'
             // sh './test_run ./gomatcher/test 16 > test.txt'
             // sh 'ls DB_*.txt > Database_List.txt'
-            sh 'echo "---Test Completed---"'
         }
     }
 }
