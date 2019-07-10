@@ -1,0 +1,39 @@
+node {
+    stage ('Git') { 
+        // Get some code from a GitHub repository
+        git 'git@bitbucket.org:theia_software/gomatcher.git'
+    }
+    stage ('Build') {
+        dir ("/var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build") {
+            sh 'rm CMakeCache.txt'
+            sh 'cmake .. -DNCNN_PATH=/home/sharefun/ncnn'
+            sh 'make'
+        }
+    }
+    stage ('Prepare DB') {
+        sh 'for f in /home/sharefun/Database/*/; do cp -r "${f}" /var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build/gomatcher; done'
+        sh 'for f in /var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build/gomatcher/*/; do if [ -d "${f}"_feature ]; then rm -r "${f}"_feature; fi done'
+        
+        // dir ("/var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build/gomatcher") {
+        //     // sh 'cp -r /mnt/nas_dl_home/AIGO/Database/Jenkins/target_db_smaller_set_8bit ./'
+        //     sh 'cp -r /home/sharefun/Database/target_db_smaller_set_8bit ./'
+        // }
+        // dir ("/var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build/gomatcher/target_db_smaller_set_8bit") {
+        //     sh 'rm -r _feature'
+        // }
+    }
+    stage ('Run DB') {
+        dir ("/var/lib/jenkins/workspace/gomatcher/G3Matcher/G3Matcher/jni/build") {
+            sh 'if ls ./DB*.txt 1> /dev/null 2>&1; then rm DB_*.txt; fi'
+            sh 'for f in ./gomatcher/*/; do ./test_run "${f}" 16 > DB_$(echo ${f} | cut -d"/" -f 3).txt; done'
+            // substr = $(echo ${f} | cut -d"/" -f 3);
+            // sh 'echo "================================"'
+            // sh 'tail -n 5 "${f}".txt'
+            // sh 'echo "================================"'
+            // sh './test_run ./gomatcher/target_db_smaller_set_8bit 16'
+            // sh './test_run ./gomatcher/test 16 > test.txt'
+            // sh 'ls DB_*.txt > Database_List.txt'
+            sh 'echo "---Test Completed---"'
+        }
+    }
+}
